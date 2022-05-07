@@ -1,9 +1,10 @@
 import { KeroCanvas, KeroDraw } from "./src/index.js"
 var kero = new KeroCanvas(640, 463);
 var draw = new KeroDraw(kero);
-draw.size = 4;
-draw.dither = 0;
-draw.color = 8;
+draw.size = 16;
+draw.dither = 15;
+draw.color = 0;
+draw.invert = false;
 
 let c = document.getElementById('keronote');
 let ctx = c.getContext('2d');
@@ -57,6 +58,11 @@ c.onpointerdown = e => {
   offset.h = bound.height;
 
   //draw.color = (draw.color + 1) & 15;
+  //draw.dither = (draw.dither + 1) & 15;
+  draw.color = Math.floor(Math.random() * 16);
+  draw.dither = Math.ceil(Math.random() * 16);
+  draw.invert = Math.round(Math.random()) > 0;
+  //draw.invert = !draw.invert;
 
   let p = relative(e);
   draw.first(p.x, p.y);

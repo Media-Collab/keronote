@@ -1,3 +1,4 @@
+import { dithers } from "./palette.js";
 import { KeroCanvas } from "./canvas.js";
 
 function clamp(x, a, b) {
@@ -16,6 +17,7 @@ export class KeroDraw {
     this.size = 0;
     this.color = 0;
     this.dither = 0;
+    this.invert = false;
     // Brush Line Path
     this._start = 0.0;
   }
@@ -25,7 +27,13 @@ export class KeroDraw {
   // ------------------
 
   check(x, y) {
-    return true;
+    let d, i;
+
+    d = this.dither;
+    i = this.invert;
+    return (d >= dithers.length) || (
+      d = dithers[d], i ? d.inverted(x, y) : d.check(x, y)
+    );
   }
 
   point(x, y) {

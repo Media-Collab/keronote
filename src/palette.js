@@ -21,9 +21,159 @@ export const palette = [
   0xff204981  // Brown
 ];
 
+// ----------------
+// DITHERING OBJECT
+// ----------------
+
+export class KeroDither {
+  constructor(w, h, buffer) {
+    this._w = w;
+    this._h = h;
+    // Save Current Buffer
+    this._buffer = buffer;
+  }
+
+  lookup(x, y) {
+    let w, h, check;
+    w = this._w;
+    h = this._h;
+    // Warp Dithering
+    x = x % w;
+    y = y % h;
+
+    return this._buffer[y * w + x];
+  }
+
+  inverted(x, y) {
+    let c = this.lookup(x, y);
+    return c <= 0;
+  }
+
+  check(x, y) {
+    let c = this.lookup(x, y);
+    return c > 0;
+  }
+}
+
 // ---------------
-// DITHERING MASKS
+// DITHERING ARRAY
 // ---------------
 
-export var dithers = [];
+var dithers = [];
 
+function add_dither(w, h, buffer) {
+  let d = new KeroDither(w, h, buffer);
+  dithers.push(d);
+}
+
+// --------------
+// DITHERING MASK
+// --------------
+
+add_dither(2, 2, [
+  1, 0,
+  0, 0 
+]);
+
+add_dither(2, 2, [
+  1, 0,
+  0, 1
+]);
+
+add_dither(2, 2, [
+  1, 0,
+  1, 0
+]);
+
+add_dither(2, 2, [
+  1, 1,
+  0, 0
+]);
+
+add_dither(3, 3, [
+  1, 0, 0,
+  0, 0, 0,
+  0, 0, 0
+]);
+
+add_dither(3, 3, [
+  0, 1, 0,
+  1, 1, 1,
+  0, 1, 0
+]);
+
+add_dither(3, 3, [
+  1, 0, 1,
+  0, 1, 0,
+  1, 0, 1
+]);
+
+add_dither(3, 3, [
+  1, 0, 0,
+  0, 0, 0,
+  0, 0, 1
+]);
+
+add_dither(3, 3, [
+  0, 0, 1,
+  0, 0, 0,
+  1, 0, 0
+]);
+
+add_dither(4, 4, [
+  0, 0, 1, 0,
+  1, 0, 0, 0,
+  0, 0, 0, 1,
+  0, 1, 0, 0
+]);
+
+add_dither(5, 5, [
+  0, 0, 0, 0, 0,
+  0, 1, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 1, 0,
+  0, 0, 0, 0, 0
+]);
+
+add_dither(5, 5, [
+  0, 0, 0, 0, 0,
+  0, 0, 0, 1, 0,
+  0, 0, 0, 0, 0,
+  0, 1, 0, 0, 0,
+  0, 0, 0, 0, 0
+]);
+
+add_dither(5, 5, [
+  0, 0, 0, 0, 0,
+  0, 0, 1, 0, 0,
+  0, 1, 1, 1, 0,
+  0, 0, 1, 0, 0,
+  0, 0, 0, 0, 0
+]);
+
+add_dither(5, 5, [
+  0, 0, 0, 0, 0,
+  0, 1, 0, 1, 0,
+  0, 0, 1, 0, 0,
+  0, 1, 0, 1, 0,
+  0, 0, 0, 0, 0
+]);
+
+add_dither(5, 5, [
+  1, 0, 0, 1, 0,
+  0, 1, 0, 0, 1,
+  0, 0, 1, 0, 0,
+  1, 0, 0, 1, 0,
+  0, 1, 0, 0, 1
+]);
+
+add_dither(5, 5, [
+  0, 1, 0, 0, 1,
+  1, 0, 0, 1, 0,
+  0, 0, 1, 0, 0,
+  0, 1, 0, 0, 1,
+  1, 0, 0, 1, 0
+]);
+
+// Export Dithering
+export { dithers };
