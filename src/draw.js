@@ -18,13 +18,15 @@ export class KeroDraw {
     this.color = 0;
     this.dither = 0;
     this.invert = false;
+
     // Brush Line Path
     this._start = 0.0;
+    this._stack = [];
   }
 
-  // ------------------
-  // BRUSH DRAW METHODS
-  // ------------------
+  // -----------------------
+  // BRUSH DITHERING PATTERN
+  // -----------------------
 
   check(x, y) {
     let d, i;
@@ -36,12 +38,81 @@ export class KeroDraw {
     );
   }
 
+  // ------------------
+  // BRUSH FILL METHODS
+  // ------------------
+
+  flood(color0, color1) {
+    let canvas, rect, frame;
+
+    canvas = this._canvas;
+    rect = canvas.rect;
+    frame = canvas.frame;
+
+    while (this._stack.length > 0) {
+      let p, x, y;
+
+      p = this._stack.pop();
+      x = p.x;
+      y = p.y;
+
+      // Check Coordinates Boundaries
+      if (x >= 0 && y >= 0 && x < rect.w && y < rect.h) {
+        let mask = frame.lookup(x, y);
+        if (mask == color0 && mask != color1) {
+          frame.put(x, y, color1);
+          // Push New 4 Points
+          this._stack.push({x: x - 1, y: y});
+          this._stack.push({x: x + 1, y: y});
+          this._stack.push({x: x, y: y - 1});
+          this._stack.push({x: x, y: y + 1});
+        }
+      }
+    }
+  }
+
+  fill(x, y) {
+    let canvas, rect;
+
+    // Canvas Rect
+    canvas = this._canvas;
+    rect = canvas.rect;
+
+    if (x >= 0 && y >= 0 && x < rect.w, y < rect.h) {
+      let frame, color0, color1;
+
+      frame = canvas.frame;
+      color0 = frame.lookup(x, y);
+      color1 = this.color;
+      // Apply Floodfill
+      frame.duplicate();
+
+      this._stack.push({x: x, y: y});
+      this.flood(color0, color1);
+      // Apply Dithering
+      for (let idx = 0, yy = 0; yy < rect.h; yy++) {
+        for (let xx = 0; xx < rect.w; xx++, idx++) {
+          // Remove Dead Pixels
+          if (!this.check(xx, yy))
+            frame.put(xx, yy, 0);
+        }
+      }
+
+      // Merge Layers
+      frame.merge();
+    }
+  }
+
+  // ------------------
+  // BRUSH DRAW METHODS
+  // ------------------
+
   point(x, y) {
-    let canvas, dimensions, frame;
+    let canvas, rect, frame;
 
     // Canvas Buffer Size
     canvas = this._canvas;
-    dimensions = canvas.dimensions;
+    rect = canvas.rect;
     // Current Frame
     frame = canvas.frame;
 
@@ -49,8 +120,8 @@ export class KeroDraw {
     let x1, x2, y1, y2;
     // Calculate Buffer Size
     size = this.size;
-    w = dimensions.w;
-    h = dimensions.h;
+    w = rect.w;
+    h = rect.h;
     // Calculate Coordinates
     x1 = clamp(x - size, 0, w);
     x2 = clamp(x + size, 0, w);

@@ -1,7 +1,7 @@
 import { KeroCanvas, KeroDraw } from "./src/index.js"
 var kero = new KeroCanvas(640, 463);
 var draw = new KeroDraw(kero);
-draw.size = 16;
+draw.size = 2;
 draw.dither = 15;
 draw.color = 0;
 draw.invert = false;
@@ -15,31 +15,36 @@ var offset = {x: 0, y: 0, w: 0, h: 0};
 // ------------
 
 function relative(e) {
-  let x, y, dimensions;
+  let x, y, rect;
   // Mouse position
   x = e.clientX - offset.x;
   y = e.clientY - offset.y;
   // Ajust Aspect Ratio
-  dimensions = kero.dimensions;
-  x = Math.floor(x / offset.w * dimensions.w);
-  y = Math.floor(y / offset.h * dimensions.h);
+  rect = kero.rect;
+  x = Math.floor(x / offset.w * rect.w);
+  y = Math.floor(y / offset.h * rect.h);
 
   // Return New Point
   return {x: x, y: y};
+}
+
+function canvas_render() {
+  kero.render();
+
+  let data, rect, buffer;
+  rect = kero.rect;
+  buffer = new Uint8ClampedArray(kero.buffer.buffer);
+  data = new ImageData(buffer, rect.w, rect.h);
+
+  ctx.putImageData(data, 0, 0);
 }
 
 function canvas_pointermove(e) {
   let p = relative(e);
   draw.push(p.x, p.y);
   draw.dispatch();
-  kero.render();
 
-  let data, dimensions, buffer;
-  dimensions = kero.dimensions;
-  buffer = new Uint8ClampedArray(kero.buffer.buffer);
-  data = new ImageData(buffer, dimensions.w, dimensions.h);
-
-  ctx.putImageData(data, 0, 0);
+  canvas_render();
   // Prevent Default
   e.preventDefault();
 }
@@ -65,9 +70,14 @@ c.onpointerdown = e => {
   //draw.invert = !draw.invert;
 
   let p = relative(e);
-  draw.first(p.x, p.y);
+  if (e.shiftKey) {
+    draw.fill(p.x, p.y);
+    canvas_render();
+  } else {
+    draw.first(p.x, p.y);
+    // Bind Events to Window
+    window.addEventListener("mousemove", canvas_pointermove);
+    window.addEventListener("mouseup", canvas_pointerup);
+  }
 
-  // Bind Events to Window
-  window.addEventListener("mousemove", canvas_pointermove);
-  window.addEventListener("mouseup", canvas_pointerup);
 }

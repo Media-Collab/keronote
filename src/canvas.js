@@ -9,7 +9,7 @@ export class KeroFrame {
     let v = w;
     v += w & 1;
     v >>= 1;
-    // Buffer Dimensions
+    // Buffer Rect
     this._w = w;
     this._h = h;
     this._v = v;
@@ -54,7 +54,7 @@ export class KeroFrame {
     // Insert Duplicated Frame
     frame = this._buffer[current];
     frame = new Uint8Array(frame);
-    this._buffer.splice(current + 1, 0, frame);
+    this._buffer.splice(current, 0, frame);
   }
 
   insert() {
@@ -63,14 +63,14 @@ export class KeroFrame {
     current = this._current;
     // Insert New Empty Frame
     frame = new Uint8Array(this._area);
-    this._buffer.splice(current + 1, 0, frame);
+    this._buffer.splice(current, 0, frame);
   }
 
   remove() {
     let check, current;
 
-    check = this._buffer > 1;
-    // Remove if there is 2 or more frames
+    check = this._buffer.length > 1;
+    // Remove if there are at least two
     if (check) {
       current = this._current;
       this._buffer.splice(current, 1);
@@ -82,6 +82,41 @@ export class KeroFrame {
     }
 
     return check;
+  }
+
+  merge() {
+    let current, next;
+    current = this._current;
+    next = current + 1;
+
+    if (next < this._buffer.length) {
+      let brc, bst;
+      let src, dst;
+      let mask, size;
+
+      brc = this._buffer[current];
+      bst = this._buffer[next];
+
+      size = this._area;
+      for (let i = 0; i < size; i++) {
+        mask = 0xFF;
+        src = brc[i];
+        dst = bst[i];
+
+        // Calculate Pixel Mask
+        if (src & 0x0F) mask &= 0xF0;
+        if (src & 0xF0) mask &= 0x0F;
+        // Apply Pixel Mask
+        dst &= mask;
+        dst |= src;
+
+        // Replace Pixel
+        bst[i] = dst;
+      }
+
+      // Remove Current
+      this.remove();
+    }
   }
 
   // -----------------
@@ -145,7 +180,7 @@ export class KeroFrame {
    * 
    * @returns {Uint8Array}
    */
-  merge() {
+  flat() {
     this._cache.fill(0);
     
     let buffers = this.buffers();
@@ -180,7 +215,7 @@ export class KeroFrame {
 
 export class KeroCanvas {
   constructor(w, h) {
-    // Canvas Dimensions
+    // Canvas Rect
     this._w = w;
     this._h = h;
 
@@ -211,13 +246,13 @@ export class KeroCanvas {
     return this._frames.length;
   }
 
+  get rect() {
+    return {w : this._w, h : this._h};  
+  }
+
   get frame() {
     let current = this._current;
     return this._frames[current];
-  }
-
-  get dimensions() {
-    return {w : this._w, h : this._h};  
   }
 
   // --------------
@@ -227,7 +262,7 @@ export class KeroCanvas {
   render() {
     let frame, w, v, area;
     // Merge Frame Cache
-    frame = this.frame.merge();
+    frame = this.frame.flat();
     // Buffer Size
     w = this._w;
     v = this._h;
