@@ -45,6 +45,8 @@
     <button id="prev">Prev</button>
     <button id="add">Add</button>
     <button id="delete">Delete</button>
+    <button id="save">Save</button>
+    <button id="load">Load</button>
   </div>
   <script type="module">
     import { KeroContext } from "./src/context.js";
@@ -62,6 +64,7 @@
     draw.invert = false;
     kero.canvas.onion = 0;
     kero.player.speed(64);
+    var blob;
 
     // Bind Events
     document.getElementById('add').onclick = (e) => {
@@ -74,21 +77,24 @@
     }
     document.getElementById('next').onclick = (e) => {
       kero.player.next();
-      kero.render();
     }
     document.getElementById('prev').onclick = (e) => {
       kero.player.prev();
-      kero.render();
     }
     document.getElementById('play').onclick = (e) => {
       kero.player.play(false, true);
     }
     document.getElementById('stop').onclick = (e) => {
       kero.player.stop(true);
-      kero.render();
     }
     document.getElementById('pause').onclick = (e) => {
       kero.player.stop(false);
+    }
+    document.getElementById('save').onclick = (e) => {
+      blob = kero.binary.save();
+    }
+    document.getElementById('load').onclick = (e) => {
+      kero.binary.load(blob);
     }
   </script>
 </body>

@@ -40,6 +40,9 @@ export class KeroPlayer {
 
     // Replace Current Frame
     this._canvas.current = current;
+    // Render Frame
+    canvas.render();
+    this._context.render();
   }
 
   prev() {
@@ -57,20 +60,16 @@ export class KeroPlayer {
 
     // Replace Current Frame
     this._canvas.current = current;
+    // Render Frame
+    canvas.render();
+    this._context.render();
   }
 
   tick() {
-    let ctx, canvas;
-    ctx = this._context;
-    canvas = this._canvas;
-
     // Next or Prev Frame
     if (this._backwards)
       this.prev();
     else this.next();
-    // Render Frame
-    canvas.render();
-    ctx.render();
   }
 
   play(backwards, loop) {
@@ -96,8 +95,10 @@ export class KeroPlayer {
       this._playing = false;
       clearInterval(this._timeout);
 
-      if (restore)
+      if (restore) {
         this._canvas.current = this._current;
+        this._context.render();
+      }
       this._context.lock = this._lock;
       // Delete Callback
       delete this._timeout;

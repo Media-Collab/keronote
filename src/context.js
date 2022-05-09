@@ -1,6 +1,7 @@
 import { KeroCanvas } from "./canvas.js";
 import { KeroDraw } from "./draw.js";
 import { KeroPlayer } from "./player.js";
+import { KeroBinary } from "./binary.js";
 
 export class KeroContext {
   get offset() {
@@ -104,6 +105,7 @@ export class KeroContext {
     this.canvas = new KeroCanvas(w, h);
     this.draw = new KeroDraw(this.canvas);
     this.player = new KeroPlayer(this);
+    this.binary = new KeroBinary(this);
 
     // Capture Events
     this._cacheup = (e) => this.onpointerup(e);

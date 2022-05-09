@@ -98,8 +98,8 @@ export class KeroFrame {
   // ----------------------
 
   set current(idx) {
-    if (index >= 0 && index < this._buffer.length)
-      this._current = index;
+    if (idx >= 0 && idx < this._buffer.length)
+      this._current = idx;
   }
 
   get current() {
@@ -186,6 +186,12 @@ export class KeroFrame {
       yield this._buffer[i];
   }
 
+  empty() {
+    this._buffer = [];
+    this._current = 0;
+    this.cache.fill(0);
+  }
+
   // ----------------
   // PIXEL OPERATIONS
   // ----------------
@@ -221,6 +227,16 @@ export class KeroFrame {
     }
 
     this.buffer[idx] = pix;
+  }
+
+  /**
+   * 
+   * @param {Uint8Array} buffer 
+   */
+  replace(buffer) {
+    let current = this._current;
+    current = this._buffer[current];
+    current.set(buffer);
   }
 
   clear() {
@@ -274,6 +290,45 @@ export class KeroCanvas {
   // FRAME INDEX OPERATIONS
   // ----------------------
 
+  set current(idx) {
+    if (idx >= 0 && idx < this._frames.length)
+      this._current = idx;
+  }
+
+  get current() {
+    return this._current;
+  }
+
+  get length() {
+    return this._frames.length;
+  }
+
+  get rect() {
+    return {w : this._w, h : this._h};  
+  }
+
+  * frames() {
+    let size = this._frames.length;
+    // Iterate Forward
+    for (let i = 0; i < size; i++)
+      yield this._frames[i];
+  }
+
+  get frame() {
+    let current = this._current;
+    return this._frames[current];
+  }
+
+  empty() {
+    this._frames = [];
+    this._current = 0;
+    this.cache.fill(0);
+  }
+
+  // ----------------------
+  // FRAME INDEX OPERATIONS
+  // ----------------------
+
   insert() {
     let frame, current;
 
@@ -282,7 +337,7 @@ export class KeroCanvas {
     frame = new KeroFrame(this._w, this._h);
     this._frames.splice(current, 0, frame);
     // Set Current to Next Frame
-    this._current = current;
+    this.current = current;
   }
 
   remove() {
@@ -303,37 +358,11 @@ export class KeroCanvas {
       } else if (current >= len) {
         // Clamp Current Frame
         current = len - 1;
-        this._current = current;
+        this.current = current;
       }
     }
 
     return check;
-  }
-
-  // ----------------------
-  // FRAME INDEX OPERATIONS
-  // ----------------------
-
-  set current(idx) {
-    if (idx >= 0 && idx < this._frames.length)
-      this._current = idx;
-  }
-
-  get current() {
-    return this._current;
-  }
-
-  get length() {
-    return this._frames.length;
-  }
-
-  get rect() {
-    return {w : this._w, h : this._h};  
-  }
-
-  get frame() {
-    let current = this._current;
-    return this._frames[current];
   }
 
   // --------------
@@ -375,7 +404,8 @@ export class KeroCanvas {
       blend(frame, cache);
 
       return cache;
-    } else return this.frame.flat();
+    } else if (len > 0) 
+      return this.frame.flat();
   }
 
   render() {
