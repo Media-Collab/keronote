@@ -1,4 +1,4 @@
-import { KeroContext } from "./context";
+import { KeroContext } from "./context.js";
 
 export class KeroUndo {
   /**
@@ -8,5 +8,18 @@ export class KeroUndo {
   constructor(ctx) {
     this._context = ctx;
     this._canvas = ctx.canvas;
+    this._snapshots = [];
+  }
+
+  snapshot() {
+
+  }
+
+  undo() {
+
+  }
+
+  redo() {
+
   }
 }
