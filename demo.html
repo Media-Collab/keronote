@@ -6,12 +6,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Keronote Test</title>
 </head>
-<body>
+<body style="background-color: aqua;">
   <div style="display: flex; justify-content: center;">
     <div style="display: inline-block; border-style: solid; border-color: gray;">
       <canvas id="keronote" width="640" height="463"></canvas>
     </div>
   </div>
-  <script src="demo.js" type="module"></script>
+  <script type="module">
+    import { KeroContext } from "./src/context.js";
+
+    let c = document.getElementById('keronote');
+    let kero = new KeroContext(c);
+    let draw = kero.draw;
+
+    // Configure Tooling
+    draw.tool = 5;
+    draw.size = 4;
+    draw.dither = 15;
+    draw.color = 0;
+    draw.invert = false;
+  </script>
 </body>
 </html>

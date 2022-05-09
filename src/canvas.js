@@ -1,5 +1,70 @@
 import { palette } from "./palette.js";
 
+// -------------------------
+// BUFFER BLENDING & ERASING
+// -------------------------
+
+/**
+ * 
+ * @param {Uint8Array} brc 
+ * @param {Uint8Array} bst 
+ */
+function blend(brc, bst) {
+  let src, dst, mask;
+  let s0, s1, size;
+
+  s0 = brc.length;
+  s1 = bst.length;
+  size = (s0 < s1) ? s0 : s1;
+  for (let i = 0; i < size; i++) {
+    mask = 0xFF;
+    src = brc[i];
+    dst = bst[i];
+
+    // Calculate Pixel Mask
+    if (src & 0x0F) mask &= 0xF0;
+    if (src & 0xF0) mask &= 0x0F;
+    // Apply Pixel Mask
+    dst &= mask;
+    dst |= src;
+
+    // Replace Pixel
+    bst[i] = dst;
+  }
+}
+
+/**
+ * 
+ * @param {Uint8Array} brc 
+ * @param {Uint8Array} bst 
+ */
+function replace(brc, bst, color) {
+  let src, dst, mask;
+  let s0, s1, size;
+
+  s0 = brc.length;
+  s1 = bst.length;
+  size = (s0 < s1) ? s0 : s1;
+
+  color = color & 0x0F;
+  color = color | (color << 4);
+  for (let i = 0; i < size; i++) {
+    mask = 0xFF;
+    src = brc[i];
+    dst = bst[i];
+
+    // Calculate Pixel Mask
+    if (src & 0x0F) mask &= 0xF0;
+    if (src & 0xF0) mask &= 0x0F;
+    // Apply Pixel Mask
+    src = color & ~mask;
+    dst &= mask, dst |= color;
+
+    // Replace Pixel
+    bst[i] = dst;
+  }
+}
+
 // --------------------
 // FRAME + LAYER OBJECT
 // --------------------
@@ -21,7 +86,9 @@ export class KeroFrame {
     first = new Uint8Array(area);
     cache = new Uint8Array(area);
     // Layer List
+    this.stencil = false;
     this._current = 0;
+
     this._buffer = [first];
     this._cache = cache;
   }
@@ -91,28 +158,12 @@ export class KeroFrame {
 
     if (next < this._buffer.length) {
       let brc, bst;
-      let src, dst;
-      let mask, size;
-
       brc = this._buffer[current];
       bst = this._buffer[next];
 
-      size = this._area;
-      for (let i = 0; i < size; i++) {
-        mask = 0xFF;
-        src = brc[i];
-        dst = bst[i];
-
-        // Calculate Pixel Mask
-        if (src & 0x0F) mask &= 0xF0;
-        if (src & 0xF0) mask &= 0x0F;
-        // Apply Pixel Mask
-        dst &= mask;
-        dst |= src;
-
-        // Replace Pixel
-        bst[i] = dst;
-      }
+      if (this.stencil) 
+        replace(brc, bst, 0);
+      else blend(brc, bst);
 
       // Remove Current
       this.remove();
@@ -185,24 +236,10 @@ export class KeroFrame {
     
     let buffers = this.buffers();
     for (let buffer of buffers) {
-      let src, dst, mask, size;
-
-      size = this._area;
-      for (let i = 0; i < size; i++) {
-        mask = 0xFF;
-        src = buffer[i]
-        dst = this._cache[i];
-
-        // Calculate Pixel Mask
-        if (src & 0x0F) mask &= 0xF0;
-        if (src & 0xF0) mask &= 0x0F;
-        // Apply Pixel Mask
-        dst &= mask;
-        dst |= src;
-
-        // Replace Pixel
-        this._cache[i] = dst;
-      }
+      // Blend or Erase Rendering
+      if (buffer == this.buffer && this.stencil)
+        replace(buffer, this._cache, 0);
+      else blend(buffer, this._cache)
     }
 
     return this._cache;
