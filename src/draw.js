@@ -85,8 +85,6 @@ export class KeroDraw {
       frame = canvas.frame;
       color0 = frame.lookup(x, y);
       color1 = this.color;
-      // Apply Floodfill
-      frame.duplicate();
 
       this._stack.push({x: x, y: y});
       this.flood(color0, color1);
@@ -98,9 +96,6 @@ export class KeroDraw {
             frame.put(xx, yy, 0);
         }
       }
-
-      // Merge Layers
-      frame.merge();
     }
   }
 
@@ -258,14 +253,21 @@ export class KeroDraw {
 
     // Create Temporal Layer
     let frame = this._canvas.frame;
-    if (this.tool > 0) {
-      frame.insert();
+    // Set Stencil Check
+    let check0, check1;
+    check0 = this.tool > 0;
+    check1 = this.color == 0;
+    if (check1) this.color = 1;
 
-      // Set Stencil Check
-      let stencil = this.color == 0;
-      if (stencil) this.color = 1;
-      frame.stencil = stencil;
+    if (this.tool == 6) {
+      frame.duplicate();
+      this.fill(x, y);
+    } else if (check0) {
+      frame.insert();
     }
+
+    // Check if needs erase pixels
+    frame.stencil = check0 && check1;
   }
 
   push(x, y) {

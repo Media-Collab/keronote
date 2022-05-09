@@ -38,7 +38,6 @@ export class KeroContext {
     rect = kero.rect;
     // Create New Image Data for Context
     buffer = new Uint8ClampedArray(kero.buffer.buffer);
-    console.log(buffer);
     data = new ImageData(buffer, rect.w, rect.h);
     // Upload Image to Context
     this._ctx.putImageData(data, 0, 0);
@@ -72,21 +71,16 @@ export class KeroContext {
 
   onpointerdown(e) {
     let p, draw = this.draw;
-    // Testing Proporuses
-    draw.tool = Math.floor(Math.random() * 6);
-    draw.color = Math.round(Math.random() * 1);
-    draw.dither = Math.ceil(Math.random() * 16);
-    draw.invert = Math.round(Math.random()) > 0;
 
     p = this.relative(e);
-    if (e.shiftKey) {
-      draw.fill(p.x, p.y);
-      this.render();
-    } else {
-      draw.first(p.x, p.y);
-      // Bind Events to Window
+    draw.first(p.x, p.y);
+
+    if (draw.tool < 6) {
       window.addEventListener("mousemove", this._cachemove);
       window.addEventListener("mouseup", this._cacheup);
+    } else {
+      draw.finally();
+      this.render();
     }
   }
 

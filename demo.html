@@ -4,11 +4,36 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background-image: linear-gradient(45deg, 
+        #dbdbdb 25%, 
+        #fcfcfc 25%, 
+        #fcfcfc 50%, 
+        #dbdbdb 50%, 
+        #dbdbdb 75%, 
+        #fcfcfc 75%, 
+        #fcfcfc 100%
+      );
+      background-size: 56.57px 56.57px;
+    }
+
+    .canvas-center {
+      display: flex;
+      justify-content: center;
+    }
+
+    .canvas-block {
+      display: inline-block;
+      border-style: solid;
+      border-color: gray;
+    }
+  </style>
   <title>Keronote Test</title>
 </head>
-<body style="background-color: aqua;">
-  <div style="display: flex; justify-content: center;">
-    <div style="display: inline-block; border-style: solid; border-color: gray;">
+<body>
+  <div class="canvas-center">
+    <div class="canvas-block">
       <canvas id="keronote" width="640" height="463"></canvas>
     </div>
   </div>
@@ -18,6 +43,7 @@
     let c = document.getElementById('keronote');
     let kero = new KeroContext(c);
     let draw = kero.draw;
+    console.log(draw);
 
     // Configure Tooling
     draw.tool = 5;
