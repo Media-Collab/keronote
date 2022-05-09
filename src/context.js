@@ -1,5 +1,6 @@
 import { KeroCanvas } from "./canvas.js";
 import { KeroDraw } from "./draw.js";
+import { KeroPlayer } from "./player.js";
 
 export class KeroContext {
   get offset() {
@@ -21,7 +22,7 @@ export class KeroContext {
     x = e.clientX - offset.x;
     y = e.clientY - offset.y;
     // Ajust Aspect Ratio
-    rect = this.kero.rect;
+    rect = this.canvas.rect;
     x = Math.floor(x / offset.w * rect.w);
     y = Math.floor(y / offset.h * rect.h);
   
@@ -30,14 +31,14 @@ export class KeroContext {
   }
 
   render() {
-    let kero = this.kero;
+    let canvas = this.canvas;
     // Flat Each Frame
-    kero.render();
+    canvas.render();
 
     let data, rect, buffer;
-    rect = kero.rect;
+    rect = canvas.rect;
     // Create New Image Data for Context
-    buffer = new Uint8ClampedArray(kero.buffer.buffer);
+    buffer = new Uint8ClampedArray(canvas.buffer.buffer);
     data = new ImageData(buffer, rect.w, rect.h);
     // Upload Image to Context
     this._ctx.putImageData(data, 0, 0);
@@ -70,6 +71,7 @@ export class KeroContext {
   }
 
   onpointerdown(e) {
+    if (this.lock) return;
     let p, draw = this.draw;
 
     p = this.relative(e);
@@ -91,16 +93,17 @@ export class KeroContext {
   constructor(canvas) {
     let w, h, ctx = canvas.getContext('2d');
 
+    this.lock = false;
     // Get Canvas Dimensions
     w = canvas.width;
     h = canvas.height;
-    // Initialize Keronote Canvas
-    this.kero = new KeroCanvas(w, h);
-    this.draw = new KeroDraw(this.kero);
-
     // Store Element
     this._element = canvas;
     this._ctx = ctx;
+    // Initialize Keronote Canvas
+    this.canvas = new KeroCanvas(w, h);
+    this.draw = new KeroDraw(this.canvas);
+    this.player = new KeroPlayer(this);
 
     // Capture Events
     this._cacheup = (e) => this.onpointerup(e);

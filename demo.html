@@ -37,20 +37,59 @@
       <canvas id="keronote" width="640" height="463"></canvas>
     </div>
   </div>
+  <div class="canvas-center">
+    <button id="play">Play</button>
+    <button id="stop">Stop</button>
+    <button id="pause">Pause</button>
+    <button id="next">Next</button>
+    <button id="prev">Prev</button>
+    <button id="add">Add</button>
+    <button id="delete">Delete</button>
+  </div>
   <script type="module">
     import { KeroContext } from "./src/context.js";
 
     let c = document.getElementById('keronote');
-    let kero = new KeroContext(c);
-    let draw = kero.draw;
+    var kero = new KeroContext(c);
+    var draw = kero.draw;
     console.log(draw);
 
     // Configure Tooling
-    draw.tool = 5;
+    draw.tool = 0;
     draw.size = 4;
-    draw.dither = 15;
-    draw.color = 0;
+    draw.dither = 16;
+    draw.color = 4;
     draw.invert = false;
+    kero.canvas.onion = 0;
+    kero.player.speed(64);
+
+    // Bind Events
+    document.getElementById('add').onclick = (e) => {
+      kero.canvas.insert();
+      kero.render();
+    }
+    document.getElementById('delete').onclick = (e) => {
+      kero.canvas.remove();
+      kero.render();
+    }
+    document.getElementById('next').onclick = (e) => {
+      kero.player.next();
+      kero.render();
+    }
+    document.getElementById('prev').onclick = (e) => {
+      kero.player.prev();
+      kero.render();
+    }
+    document.getElementById('play').onclick = (e) => {
+      kero.player.play(false, true);
+    }
+    document.getElementById('stop').onclick = (e) => {
+      kero.player.stop(true);
+      kero.render();
+    }
+    document.getElementById('pause').onclick = (e) => {
+      kero.player.stop(false);
+    }
   </script>
 </body>
 </html>

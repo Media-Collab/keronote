@@ -58,7 +58,7 @@ function replace(brc, bst, color) {
     if (src & 0xF0) mask &= 0x0F;
     // Apply Pixel Mask
     src = color & ~mask;
-    dst &= mask, dst |= color;
+    dst &= mask, dst |= src;
 
     // Replace Pixel
     bst[i] = dst;
@@ -88,9 +88,9 @@ export class KeroFrame {
     // Layer List
     this.stencil = false;
     this._current = 0;
-
+    // Buffer List
+    this.cache = cache;
     this._buffer = [first];
-    this._cache = cache;
   }
 
   // ----------------------
@@ -98,7 +98,7 @@ export class KeroFrame {
   // ----------------------
 
   set current(idx) {
-    if (index > 0 && index < this._buffer.length)
+    if (index >= 0 && index < this._buffer.length)
       this._current = index;
   }
 
@@ -232,17 +232,17 @@ export class KeroFrame {
    * @returns {Uint8Array}
    */
   flat() {
-    this._cache.fill(0);
+    this.cache.fill(0);
     
     let buffers = this.buffers();
     for (let buffer of buffers) {
       // Blend or Erase Rendering
       if (buffer == this.buffer && this.stencil)
-        replace(buffer, this._cache, 0);
-      else blend(buffer, this._cache)
+        replace(buffer, this.cache, 0);
+      else blend(buffer, this.cache)
     }
 
-    return this._cache;
+    return this.cache;
   }
 }
 
@@ -264,14 +264,58 @@ export class KeroCanvas {
     // Rendering Buffer
     let area = w * h;
     this.buffer = new Uint32Array(area);
+    this.cache = new Uint8Array(area);
+
+    // Onion Skin
+    this.onion = 0;
   }
 
-  // ----------------
-  // FRAME OPERATIONS
-  // ----------------
+  // ----------------------
+  // FRAME INDEX OPERATIONS
+  // ----------------------
+
+  insert() {
+    let frame, current;
+
+    current = this._current + 1;
+    // Insert New Empty Frame
+    frame = new KeroFrame(this._w, this._h);
+    this._frames.splice(current, 0, frame);
+    // Set Current to Next Frame
+    this._current = current;
+  }
+
+  remove() {
+    let check, current, len;
+
+    check = this._frames.length > 0;
+    // Remove if there are at least two
+    if (check) {
+      current = this._current;
+      this._frames.splice(current, 1);
+      // Get New Length
+      len = this._frames.length;
+
+      if (len <= 0) {
+        // Create New Empty Frame
+        let frame = new KeroFrame(this._w, this._h);
+        this._frames.push(frame);
+      } else if (current >= len) {
+        // Clamp Current Frame
+        current = len - 1;
+        this._current = current;
+      }
+    }
+
+    return check;
+  }
+
+  // ----------------------
+  // FRAME INDEX OPERATIONS
+  // ----------------------
 
   set current(idx) {
-    if (idx > 0 && idx < this._frames.length)
+    if (idx >= 0 && idx < this._frames.length)
       this._current = idx;
   }
 
@@ -296,10 +340,48 @@ export class KeroCanvas {
   // RENDER METHODS
   // --------------
 
+  ghost() {
+    let onion = this.onion;
+    let len = this._frames.length;
+    if (onion > 0 && len > 1) {
+      // Current Index
+      let current, original;
+      original = this.current;
+
+      let cache, frame;
+      // Clear Cache Ghost
+      cache = this.cache;
+      cache.fill(0);
+
+      current = original;
+      // Ghost Backwards
+      for (let i = 0; i < onion; i++) {
+        if (--current < 0) break;
+        frame = this._frames[current];
+        replace(frame.cache, cache, 2);
+      }
+
+      current = original;
+      // Ghost Forwards
+      for (let i = 0; i < onion; i++) {
+        if (++current >= len) break;
+        frame = this._frames[current];
+        replace(frame.cache, cache, 2);
+      }
+
+      // Blend Current
+      current = original;
+      frame = this.frame.flat();
+      blend(frame, cache);
+
+      return cache;
+    } else return this.frame.flat();
+  }
+
   render() {
     let frame, w, v, area;
     // Merge Frame Cache
-    frame = this.frame.flat();
+    frame = this.ghost();
     // Buffer Size
     w = this._w;
     v = this._h;
