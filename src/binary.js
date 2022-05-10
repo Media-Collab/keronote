@@ -54,21 +54,19 @@ export class KeroBinary {
       let offset, bytes, chunk;
       for (let frame of buffer0) {
         canvas.insert();
-        let aux = canvas.frame;
-        aux.empty();
+        let cursor = canvas.frame;
+        cursor.empty();
 
         for (let layer of frame) {
-          aux.insert();
-
           offset = layer.offset;
           bytes = layer.bytes;
           // Replace Buffer Content
           chunk = buffer1.slice(offset, offset + bytes);
-          aux.replace(chunk);
+          cursor.push(chunk);
         }
 
         // Reset Frame Current
-        aux.current = 0;
+        cursor.current = 0;
       }
 
       // Reset Canvas Current

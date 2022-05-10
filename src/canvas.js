@@ -186,6 +186,10 @@ export class KeroFrame {
       yield this._buffer[i];
   }
 
+  push(buffer) {
+    this._buffer.push(buffer);
+  }
+
   empty() {
     this._buffer = [];
     this._current = 0;
