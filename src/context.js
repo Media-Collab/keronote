@@ -2,6 +2,7 @@ import { KeroCanvas } from "./canvas.js";
 import { KeroDraw } from "./draw.js";
 import { KeroPlayer } from "./player.js";
 import { KeroBinary } from "./binary.js";
+import { KeroUndo } from "./undo.js";
 
 export class KeroContext {
   get offset() {
@@ -69,6 +70,8 @@ export class KeroContext {
 
     // End Drawing
     this.draw.finally();
+    // Register History
+    this.history.snapshot();
   }
 
   onpointerdown(e) {
@@ -77,6 +80,8 @@ export class KeroContext {
 
     p = this.relative(e);
     draw.first(p.x, p.y);
+    // Check if needs prepare
+    this.history.prepare();
 
     if (draw.tool < 6) {
       window.addEventListener("mousemove", this._cachemove);
@@ -106,6 +111,9 @@ export class KeroContext {
     this.draw = new KeroDraw(this.canvas);
     this.player = new KeroPlayer(this);
     this.binary = new KeroBinary(this);
+    this.history = new KeroUndo(this);
+    // Prepare First Layer
+    this.history.prepare();
 
     // Capture Events
     this._cacheup = (e) => this.onpointerup(e);

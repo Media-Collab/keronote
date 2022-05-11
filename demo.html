@@ -44,9 +44,19 @@
     <button id="next">Next</button>
     <button id="prev">Prev</button>
     <button id="add">Add</button>
+    <button id="duplicate">Duplicate</button>
     <button id="delete">Delete</button>
     <button id="save">Save</button>
     <button id="load">Load</button>
+  </div>
+  <div class="canvas-center">
+    <button id="add-layer">Add Layer</button>
+    <button id="duplicate-layer">Duplicate Layer</button>
+    <button id="delete-layer">Delete Layer</button>
+    <button id="next-layer">Next Layer</button>
+    <button id="prev-layer">Prev Layer</button>
+    <button id="undo-layer">Undo Layer</button>
+    <button id="redo-layer">Redo Layer</button>
   </div>
   <script type="module">
     import { KeroContext } from "./src/context.js";
@@ -75,6 +85,10 @@
       kero.canvas.remove();
       kero.render();
     }
+    document.getElementById('duplicate').onclick = (e) => {
+      kero.canvas.duplicate();
+      kero.render();
+    }
     document.getElementById('next').onclick = (e) => {
       kero.player.next();
     }
@@ -95,6 +109,34 @@
     }
     document.getElementById('load').onclick = (e) => {
       kero.binary.load(blob);
+    }
+
+    document.getElementById('add-layer').onclick = (e) => {
+      kero.canvas.frame.insert();
+    }
+    document.getElementById('duplicate-layer').onclick = (e) => {
+      kero.canvas.frame.duplicate();
+    }
+    document.getElementById('delete-layer').onclick = (e) => {
+      kero.canvas.frame.remove();
+    }
+    document.getElementById('next-layer').onclick = (e) => {
+      let frame, current;
+      frame = kero.canvas.frame;
+      current = frame.current;
+      frame.current = current + 1;
+    }
+    document.getElementById('prev-layer').onclick = (e) => {
+      let frame, current;
+      frame = kero.canvas.frame;
+      current = frame.current;
+      frame.current = current - 1;
+    }
+    document.getElementById('undo-layer').onclick = (e) => {
+      kero.history.undo();
+    }
+    document.getElementById('redo-layer').onclick = (e) => {
+      kero.history.redo();
     }
   </script>
 </body>

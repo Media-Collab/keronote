@@ -333,6 +333,26 @@ export class KeroCanvas {
   // FRAME INDEX OPERATIONS
   // ----------------------
 
+  duplicate() {
+    let frame, src, dst, current;
+
+    // Insert New Empty Frame
+    frame = new KeroFrame(this._w, this._h);
+    frame._buffer = [];
+    // Clone Each Layer
+    src = this.frame;
+    for (let layer of src._buffer) {
+      dst = new Uint8Array(layer);
+      frame._buffer.push(dst);
+    }
+
+    // Add Current Layer
+    current = this._current + 1;
+    this._frames.splice(current, 0, frame);
+    // Set Current to Next Frame
+    this.current = current;
+  }
+
   insert() {
     let frame, current;
 
