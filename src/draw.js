@@ -255,19 +255,28 @@ export class KeroDraw {
     let frame = this._canvas.frame;
     // Set Stencil Check
     let check0, check1;
-    check0 = this.tool > 0;
+    check0 = this.tool > 0 && this.tool < 6;
     check1 = this.color == 0;
-    if (check1) this.color = 1;
 
-    if (this.tool == 6) {
-      frame.duplicate();
-      this.fill(x, y);
-    } else if (check0) {
-      frame.insert();
+    let work = frame.buffer;
+    // Prepare Hold Buffers
+    if (check0) {
+      frame._pre0.fill(0);
+      frame._pre1.set(frame.buffer);
+      work = frame._pre0;
     }
 
-    // Check if needs erase pixels
-    frame.stencil = check0 && check1;
+    frame.hold = check0;
+    frame.work = work;
+    // Check if needs stencil
+    check1 = check0 && check1;
+    if (check1)
+      this.color = 1;
+    frame.stencil = check1;
+
+    // Check if is Filling
+    if (this.tool == 6)
+      this.fill(x, y);
   }
 
   push(x, y) {
@@ -282,9 +291,12 @@ export class KeroDraw {
     b = this._b;
 
     let x, y, w, h;
+    let frame = this._canvas.frame;
     // Clear Temporal Layer
-    if (this.tool > 0)
-      this._canvas.frame.clear();
+    if (frame.hold) {
+      frame._pre0.fill(0);
+      frame._pre1.set(frame.buffer);
+    }
 
     switch (this.tool) {
       case 0: // Brush, Line
@@ -335,18 +347,18 @@ export class KeroDraw {
   }
 
   finally() {
-    // Merge Temporal Layer
+    let frame = this._canvas.frame;
+    // Stop Holding Preview
     if (this.tool > 0) {
-        let frame = this._canvas.frame;
-        let stencil = frame.stencil;
-        // Merge Frame
-        frame.merge();
+      let stencil = frame.stencil;
 
-        // Restore Color Stencil
-        if (stencil) {
-          this.color = 0;
-          frame.stencil = false;
-        }
+      frame.worked();
+      frame.hold = false;
+      // Restore Color Stencil
+      if (stencil) {
+        this.color = 0;
+        frame.stencil = false;
+      }
     }
   }
 }

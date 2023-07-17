@@ -82,13 +82,21 @@ export class KeroFrame {
     let area = v * h;
     this._area = area;
 
-    let first, cache;
+    let first, cache, pre0, pre1;
     first = new Uint8Array(area);
     cache = new Uint8Array(area);
+    // Shape Preview
+    pre0 = new Uint8Array(area);
+    pre1 = new Uint8Array(area);
     // Layer List
+    this.hold = false;
     this.stencil = false;
     this._current = 0;
+    // Shape Preview
+    this._pre0 = pre0;
+    this._pre1 = pre1;
     // Buffer List
+    this.work = pre0;
     this.cache = cache;
     this._buffer = [first];
   }
@@ -222,7 +230,7 @@ export class KeroFrame {
     x >>= 1;
     // Pixel Index
     idx = y * this._v + x;
-    idx = this.buffer[idx];
+    idx = this.work[idx];
 
     // Return Current Pixel
     return (idx >> o) & 0xF;
@@ -235,7 +243,7 @@ export class KeroFrame {
     x >>= 1;
     // Pixel Index
     idx = y * this._v + x;
-    pix = this.buffer[idx];
+    pix = this.work[idx];
 
     if (o) {
       pix &= 0x0F;
@@ -245,7 +253,15 @@ export class KeroFrame {
       pix |= color;
     }
 
-    this.buffer[idx] = pix;
+    this.work[idx] = pix;
+  }
+
+  worked() {
+    if (this.hold) {
+      if (this.stencil)
+        replace(this.work, this.buffer, 0);
+      else blend(this.work, this.buffer);
+    }
   }
 
   /**
@@ -272,9 +288,20 @@ export class KeroFrame {
     let buffers = this.buffers();
     for (let buffer of buffers) {
       // Blend or Erase Rendering
-      if (buffer == this.buffer && this.stencil)
-        replace(buffer, this.cache, 0);
-      else blend(buffer, this.cache)
+      if (buffer == this.buffer && this.hold) {
+        let pre0 = this._pre0;
+        let pre1 = this._pre1;
+
+        if (this.stencil)
+          replace(pre0, pre1, 0);
+        else blend(pre0, pre1);
+
+        // Blend Marked
+        buffer = pre1;
+      }
+
+      // Blend Current Buffer
+      blend(buffer, this.cache)
     }
 
     return this.cache;

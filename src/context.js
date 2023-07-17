@@ -79,15 +79,18 @@ export class KeroContext {
     let p, draw = this.draw;
 
     p = this.relative(e);
-    draw.first(p.x, p.y);
-    // Check if needs prepare
+    // Prepare History
     this.history.prepare();
 
+    // Draw Tool
+    draw.first(p.x, p.y);
     if (draw.tool < 6) {
       window.addEventListener("mousemove", this._cachemove);
       window.addEventListener("mouseup", this._cacheup);
     } else {
       draw.finally();
+      // Register History
+      this.history.snapshot();
       this.render();
     }
   }
