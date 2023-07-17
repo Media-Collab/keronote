@@ -170,6 +170,21 @@ export class KeroFrame {
     }
   }
 
+  swap(idx0, idx1) {
+    let current = this._current;
+
+    // Swap Both Buffers
+    let aux = this._buffer[idx0];
+    this._buffer[idx0] = this._buffer[idx1];
+    this._buffer[idx1] = aux;
+
+    // Check if we Need swap current
+    if (current == idx0)
+      this._current = idx1;
+    else if (current == idx1)
+      this._current = idx0;
+  }
+
   // -----------------
   // BUFFER OPERATIONS
   // -----------------
