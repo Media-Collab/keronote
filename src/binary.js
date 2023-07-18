@@ -97,8 +97,7 @@ export class KeroBinary {
     for (let frame of frames) {
       json = [];
 
-      let buffers = frame.buffers();
-      for (let layer of buffers) {
+      for (let layer of frame._buffer) {
         // Arrange Packed Buffer
         bytes = layer.byteLength;
         buffer1.set(layer, offset, offset + bytes);
