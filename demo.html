@@ -152,11 +152,6 @@
     document.getElementById('redo-layer').onclick = (e) => {
       kero.history.redo();
     }
-
-    c.addEventListener("mouseup", (e) => {
-      let current = kero.canvas.frame.current;
-      kero.preview.update(current);
-    });
   </script>
 </body>
 </html>

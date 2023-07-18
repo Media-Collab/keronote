@@ -73,6 +73,9 @@ export class KeroContext {
     this.draw.finally();
     // Register History
     this.history.snapshot();
+    // Update Thumb if Found
+    let current = this.canvas.frame.current;
+    this.preview.update(current);
   }
 
   onpointerdown(e) {
