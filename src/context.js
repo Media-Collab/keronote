@@ -3,6 +3,7 @@ import { KeroDraw } from "./draw.js";
 import { KeroPlayer } from "./player.js";
 import { KeroBinary } from "./binary.js";
 import { KeroUndo } from "./undo.js";
+import { KeroPreview } from "./thumb.js";
 
 export class KeroContext {
   get offset() {
@@ -115,6 +116,7 @@ export class KeroContext {
     this.player = new KeroPlayer(this);
     this.binary = new KeroBinary(this);
     this.history = new KeroUndo(this);
+    this.preview = new KeroPreview(this.canvas);
     // Prepare First Layer
     this.history.prepare();
 

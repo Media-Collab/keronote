@@ -35,6 +35,9 @@
   <div class="canvas-center">
     <div class="canvas-block">
       <canvas id="keronote" width="640" height="463"></canvas>
+      <div id="thumbs">
+
+      </div>
     </div>
   </div>
   <div class="canvas-center">
@@ -113,9 +116,20 @@
 
     document.getElementById('add-layer').onclick = (e) => {
       kero.canvas.frame.insert();
+      let thumbs = document.getElementById("thumbs");
+      let canvas = document.createElement("canvas");
+      canvas.width = 640 / 4;
+      canvas.height = 463 / 4;
+      kero.preview.capture(canvas, kero.canvas.frame.current);
     }
     document.getElementById('duplicate-layer').onclick = (e) => {
       kero.canvas.frame.duplicate();
+      let thumbs = document.getElementById("thumbs");
+      let canvas = document.createElement("canvas");
+      canvas.width = 640 / 4;
+      canvas.height = 463 / 4;
+      thumbs.appendChild(canvas);
+      kero.preview.capture(canvas, kero.canvas.frame.current);
     }
     document.getElementById('delete-layer').onclick = (e) => {
       kero.canvas.frame.remove();
@@ -138,6 +152,11 @@
     document.getElementById('redo-layer').onclick = (e) => {
       kero.history.redo();
     }
+
+    c.addEventListener("mouseup", (e) => {
+      let current = kero.canvas.frame.current;
+      kero.preview.update(current);
+    });
   </script>
 </body>
 </html>
