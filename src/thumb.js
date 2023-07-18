@@ -58,6 +58,8 @@ class KeroThumbnail {
     createImageBitmap(data).then(bm => {
       let ctx = this._ctx;
       let c = ctx.canvas;
+      // Draw and Scale Image
+      ctx.clearRect(0, 0, c.width, c.height);
       ctx.drawImage(bm, 0, 0, c.width, c.height);
     });
   }
