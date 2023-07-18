@@ -29,11 +29,12 @@ export class KeroBinary {
   /**
    * 
    * @param {Blob} blob 
+   * @returns {Promise}
    */
-  load(blob) {
+  async load(blob) {
     let canvas = this._ctx.canvas;
 
-    blob.arrayBuffer().then((buffer) => {
+    return blob.arrayBuffer().then((buffer) => {
       let head = buffer.slice(0, 8);
       head = new Uint32Array(head);
       // Get Buffer Sizes
