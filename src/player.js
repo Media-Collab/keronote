@@ -104,4 +104,13 @@ export class KeroPlayer {
       delete this._timeout;
     }
   }
+
+  replay() {
+    if (this._playing) {
+      clearInterval(this._timeout);
+      // Update Speed
+      this._timeout = setInterval(
+        () => this.tick(), this._speed);
+    }
+  }
 }
